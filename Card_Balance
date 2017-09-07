@@ -1,0 +1,38 @@
+
+card_balance<- read.csv(file = "card_balance.csv", stringsAsFactors = F)
+#--------------------------  Decision Tree: CART and CHAID -----------------------------------
+
+install.packages("rpart")
+install.packages("rpart.plot")
+
+
+
+library(rpart)
+dt1 <- rpart(Pred_bill_drop~AGE+Pre_billed_amt_3m+Billed_amount_1+Payment_1+Payment_2+Payment_3+
+               Billed_amount_2,
+             data=sm_card_balance)
+
+library(rpart.plot)
+rpart.plot(dt1)
+
+install.packages("libcoin")
+install.packages("partykit")
+install.packages("CHAID", repos="http://R-Forge.R-project.org")
+library(CHAID)
+library(help=CHAID)
+
+sm_card_balance1 <- sm_card_balance
+sm_card_balance1$AGE_cat <- cut(sm_card_balance1$AGE,
+                                quantile(sm_card_balance1$AGE, probs = seq(0,1,0.05)))
+sm_card_balance1$Pre_billed_amt_3m_cat <- cut(sm_card_balance1$Pre_billed_amt_3m,
+                                quantile(sm_card_balance1$Pre_billed_amt_3m, probs = seq(0,1,0.05)))
+sm_card_balance1$Payment_1_cat <- cut(sm_card_balance1$Payment_1,
+                                      unique(quantile(sm_card_balance1$Payment_1, probs = seq(0,1,0.05))))
+
+dt.chaid <- chaid(as.factor(Pred_bill_drop)~AGE_cat+Pre_billed_amt_3m_cat+Payment_1_cat,
+             data=sm_card_balance1)
+
+
+dt.chaid
+
+plot(dt.chaid)
